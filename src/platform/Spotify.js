@@ -128,10 +128,12 @@ class Spotify {
       const unresolvedPlaylistTracks = await Promise.all(
         limitedTracks.map((x) => this.buildUnresolved(x.track))
       );
-
+      const resolvedPlaylistTracks = await Promise.all(
+        unresolvedPlaylistTracks.map((x) => this.buildTrack(x))
+      );
       return this.buildResponse(
         "PLAYLIST_LOADED",
-        unresolvedPlaylistTracks,
+        resolvedPlaylistTracks,
         playlist.name
       );
     } catch (e) {
@@ -155,9 +157,14 @@ class Spotify {
       const unresolvedPlaylistTracks = await Promise.all(
         limitedTracks.map((x) => this.buildUnresolved(x))
       );
+  
+      const resolvedPlaylistTracks = await Promise.all(
+        unresolvedPlaylistTracks.map((x) => this.buildTrack(x))
+      );
+
       return this.buildResponse(
         "PLAYLIST_LOADED",
-        unresolvedPlaylistTracks,
+        resolvedPlaylistTracks,
         album.name
       );
     } catch (e) {
@@ -185,10 +192,14 @@ class Spotify {
       const unresolvedPlaylistTracks = await Promise.all(
         limitedTracks.map((x) => this.buildUnresolved(x))
       );
+      
+      const resolvedPlaylistTracks = await Promise.all(
+        unresolvedPlaylistTracks.map((x) => this.buildTrack(x))
+      );
 
       return this.buildResponse(
         "PLAYLIST_LOADED",
-        unresolvedPlaylistTracks,
+        resolvedPlaylistTracks,
         artist.name
       );
     } catch (e) {
@@ -205,8 +216,8 @@ class Spotify {
     try {
       const data = await this.requestData(`/tracks/${id}`);
       const unresolvedTrack = await this.buildUnresolved(data);
-
-      return this.buildResponse("TRACK_LOADED", [unresolvedTrack]);
+      const resolvedTrack = await this.buildTrack(unresolvedTrack)
+      return await this.buildResponse("TRACK_LOADED", [resolvedTrack]);
     } catch (e) {
       return this.buildResponse(
         e.body?.error.message === "invalid id" ? "NO_MATCHES" : "LOAD_FAILED",
@@ -229,7 +240,10 @@ class Spotify {
       const unresolvedTracks = await Promise.all(
         data.tracks.items.map((x) => this.buildUnresolved(x))
       );
-      return this.buildResponse("TRACK_LOADED", unresolvedTracks);
+      const resolvedTracks = await Promise.all(
+        unresolvedTracks.map((x) => this.buildTrack(x))
+      );
+      return this.buildResponse("TRACK_LOADED", resolvedTracks);
     } catch (e) {
       return this.buildResponse(
         e.body?.error.message === "invalid id" ? "NO_MATCHES" : "LOAD_FAILED",
